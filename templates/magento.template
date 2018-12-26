@@ -569,7 +569,6 @@ Resources:
         DBMasterUserPassword: !Ref DBMasterUserPassword
         DBMultiAZ: !Ref DBMultiAZ
         DBStorageType: !Ref DBStorageType
-        DBSubnetGroup:  !Ref DBSubnetGroup
   ElastiCache:
     Type: AWS::CloudFormation::Stack
     Properties:

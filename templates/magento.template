@@ -28,6 +28,7 @@ Metadata:
       Parameters:
       - DBEngineType
       - DBInstanceClass
+      - DBSubnet
       - DBName
       - DBMultiAZ
       - DBMasterUsername
@@ -43,6 +44,7 @@ Metadata:
       - ElastiCacheAutomaticFailover
       - ElastiCacheNodeType
       - ElastiCacheNodes
+      - ElastiCacheSubnet
     - Label:
         default: Magento Configuration
       Parameters:
@@ -94,6 +96,8 @@ Metadata:
         default: DB master user name
       DBMultiAZ:
         default: Enable Multi-AZ deployment for DB instance
+      DBSubnet:
+        default: testrds1
       DBName:
         default: DB name
       DBStorageType:
@@ -106,6 +110,8 @@ Metadata:
         default: ElastiCache node type
       ElastiCacheNodes:
         default: Number of ElastiCache nodes
+      ElastiCacheSubnet:
+        default: testec1
       KeyPairName:
         default: Key pair name
       MagentoCurrency:
@@ -283,6 +289,15 @@ Parameters:
     MaxLength: '64'
     MinLength: '5'
     Type: String
+  DBSubnet:
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: Must begin with a letter and contain only alphanumeric
+      characters.
+    Default: testrds1
+    Description: Name of Magento Quick Start database subnet group.
+    MaxLength: '64'
+    MinLength: '5'
+    Type: String
   DBStorageType:
     AllowedValues:
     - standard
@@ -335,6 +350,16 @@ Parameters:
     MaxValue: '5'
     MinValue: '2'
     Type: Number
+  ElastiCacheSubnet:
+    AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
+    ConstraintDescription: Quick Start Elasticache Subnet Group name can include numbers, lowercase
+      letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
+      (-).
+    Default: testec1
+    Description: Quick Start Elasticache Subnet Group name can include numbers, lowercase
+      letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen
+      (-).
+    Type: String
   KeyPairName:
     Description: Public/private key pairs allow you to securely connect to your instance
       after it launches
@@ -538,11 +563,13 @@ Resources:
         DBBackupRetentionPeriod: !Ref DBBackupRetentionPeriod
         DBInstanceClass: !Ref DBInstanceClass
         DBName: !Ref DBName
+        DBSubnetGroup: !Ref DBSubnet
         DBIops: !Ref DBIops
         DBMasterUsername: !Ref DBMasterUsername
         DBMasterUserPassword: !Ref DBMasterUserPassword
         DBMultiAZ: !Ref DBMultiAZ
         DBStorageType: !Ref DBStorageType
+        DBSubnetGroup:  !Ref DBSubnetGroup
   ElastiCache:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -551,6 +578,7 @@ Resources:
         ElastiCacheSecurityGroup: !GetAtt SecurityGroupStack.Outputs.ElastiCacheSecurityGroup
         Subnets: !Sub ${PrivateSubnet1ID},${PrivateSubnet2ID}
         ElastiCacheNodes: !Ref ElastiCacheNodes
+        ElastiCacheSubnetGroup: !Ref ElastiCacheSubnet
         ElastiCacheAutomaticFailover: !Ref ElastiCacheAutomaticFailover
         ElastiCacheNodeType: !Ref ElastiCacheNodeType
   WebServerASGStack:
@@ -579,6 +607,7 @@ Resources:
         DBMasterUserPassword: !Ref DBMasterUserPassword
         DBMasterUsername: !Ref DBMasterUsername
         DBName: !Ref DBName
+        DBSubnetGroup: !Ref DBSubnet
         MySQLEndPointAddress: !GetAtt RDSStack.Outputs.RDSEndPointAddress
         ElastiCacheEndpoint: !GetAtt ElastiCache.Outputs.ElastiCacheEndpoint
         DNSName: !Ref DNSName
